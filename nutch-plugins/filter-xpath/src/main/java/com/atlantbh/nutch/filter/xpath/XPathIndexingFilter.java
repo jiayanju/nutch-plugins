@@ -62,6 +62,7 @@ public class XPathIndexingFilter implements IndexingFilter {
 
 	@Override
 	public NutchDocument filter(NutchDocument doc, Parse parse, Text url, CrawlDatum datum, Inlinks inlinks) throws IndexingException {
+		log.info("Index Filter Begin");
 		Metadata metadata = parse.getData().getParseMeta();
 		
 		List<XPathIndexerProperties> xPathIndexerPropertiesList = xpathFilterConfiguration.getXPathIndexerPropertiesList();
@@ -115,6 +116,7 @@ public class XPathIndexingFilter implements IndexingFilter {
 								break;
 						} 
 						
+						log.info("add field to document : " + xPathIndexerPropertiesField.getName() + " value : " + value);
 						// Add field
 						doc.add(xPathIndexerPropertiesField.getName(), value);
 						if (log.isDebugEnabled()) {

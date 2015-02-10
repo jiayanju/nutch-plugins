@@ -71,7 +71,7 @@ public class XPathHtmlParserFilter implements HtmlParseFilter {
 	}
 
 	private void init() {
-		
+		log.info("init");
 		// Initialize HTMLCleaner
 		cleaner = new HtmlCleaner();
 		CleanerProperties props = cleaner.getProperties();
@@ -114,6 +114,7 @@ public class XPathHtmlParserFilter implements HtmlParseFilter {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public ParseResult filter(Content content, ParseResult parseResult, HTMLMetaTags metaTags, DocumentFragment doc) {
+		log.info("filter method begin");
 		Metadata metadata = parseResult.get(content.getUrl()).getData().getParseMeta();
 		byte[] rawContent = content.getContent();
 		
@@ -146,7 +147,7 @@ public class XPathHtmlParserFilter implements HtmlParseFilter {
 					
 					List<XPathIndexerPropertiesField> xPathIndexerPropertiesFieldList = xPathIndexerProperties.getXPathIndexerPropertiesFieldList();
 					for(XPathIndexerPropertiesField xPathIndexerPropertiesField : xPathIndexerPropertiesFieldList) {
-						
+						log.info("Filed XPath: " + xPathIndexerPropertiesField.getXPath());
 						// Evaluate xpath			
 						XPath xPath = new DOMXPath(xPathIndexerPropertiesField.getXPath());
 						List nodeList = xPath.selectNodes(cleanedXmlHtml);
@@ -163,6 +164,7 @@ public class XPathHtmlParserFilter implements HtmlParseFilter {
 
 								// Extract data	
 								String tempValue = FilterUtils.extractTextContentFromRawNode(node);
+								log.info("Node Temp Value : " + tempValue);
 								tempValue = filterValue(tempValue, trim);
 								
 								// Concatenate tempValue to value
@@ -224,6 +226,7 @@ public class XPathHtmlParserFilter implements HtmlParseFilter {
 	
 	@SuppressWarnings("rawtypes")
 	private boolean pageToProcess(XPathIndexerProperties xPathIndexerProperties, Document cleanedXmlHtml, String url) throws JaxenException {
+		log.info("Page processed url : " + url);
 
 		boolean processPage = true;
 
@@ -231,6 +234,8 @@ public class XPathHtmlParserFilter implements HtmlParseFilter {
 		// URL REGEX CONTENT PAGE FILTERING
 		// *************************************
 		processPage = processPage && FilterUtils.isMatch(xPathIndexerProperties.getPageUrlFilterRegex(), url);
+
+		log.info("is page url matched PageUrlFilterRegex : " + processPage);
 
 		// Check return status
 		if (!processPage) {
@@ -242,6 +247,7 @@ public class XPathHtmlParserFilter implements HtmlParseFilter {
 		// *************************************
 
 		if (xPathIndexerProperties.getPageContentFilterXPath() != null) {
+			log.info("PageContentFilterXPath: " + xPathIndexerProperties.getPageContentFilterXPath());
 			XPath xPathPageContentFilter = new DOMXPath(xPathIndexerProperties.getPageContentFilterXPath());
 			List pageContentFilterNodeList = xPathPageContentFilter.selectNodes(cleanedXmlHtml);
 			boolean trim = FilterUtils.getNullSafe(xPathIndexerProperties.isTrimPageContentFilterXPathData(), true);
@@ -266,9 +272,11 @@ public class XPathHtmlParserFilter implements HtmlParseFilter {
 							value = value + concatDelimiter + tempValue;
 						}
 					}
+					log.info("concat value: " + value);
 				}
-
-				processPage = processPage && FilterUtils.isMatch(xPathIndexerProperties.getPageContentFilterRegex(), value);
+				log.info("PageContentFilterRegex : " + xPathIndexerProperties.getPageContentFilterRegex());
+				log.info("evaluation value : " + FilterUtils.isMatch(xPathIndexerProperties.getPageContentFilterRegex(), value));
+				//processPage = processPage && FilterUtils.isMatch(xPathIndexerProperties.getPageContentFilterRegex(), value);
 			} else {
 				for (Object node : pageContentFilterNodeList) {
 
@@ -278,9 +286,12 @@ public class XPathHtmlParserFilter implements HtmlParseFilter {
 					if(value != null) {
 						processPage = processPage && FilterUtils.isMatch(xPathIndexerProperties.getPageContentFilterRegex(), value);
 					}
+					log.info("value: " + value);
 				}
+				
 			}
 		}
+		log.info("process method processPage Value: " + processPage);
 
 		return processPage;
 	}
